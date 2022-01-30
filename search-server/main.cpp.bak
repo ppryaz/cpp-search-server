@@ -85,6 +85,34 @@ void TestCalculationRating() {
 	}
 }
 
+void TestCalculationRatingNegativNumbers() {
+	const int doc_id = 42;
+	const string content = "in cat tron text city "s;
+	const vector<int> ratings = { 20,  -11, -21 };
+	{
+		// checking calculation rating
+		SearchServer server;
+		server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
+		const auto found_docs = server.FindTopDocuments("in"s);
+		const Document& doc0 = found_docs[0];
+		ASSERT(doc0.rating == -4);
+	}
+}
+
+void TestCalculationLotsOfRating() {
+	const int doc_id = 42;
+	const string content = "in cat tron text city "s;
+	const vector<int> ratings = { 20,  -11, -21, 12, 31, 42, 21, 31,3 ,7 ,9 };
+	{
+		// checking calculation rating
+		SearchServer server;
+		server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
+		const auto found_docs = server.FindTopDocuments("in"s);
+		const Document& doc0 = found_docs[0];
+		ASSERT(doc0.rating == 13);
+	}
+}
+
 void TestSortFromRelevance() {
 	{   // checking sorting by relevance
 		SearchServer server;
@@ -102,7 +130,7 @@ void TestSortFromRelevance() {
 	}
 }
 
-void TestCalculateRElevance() {
+void TestCalculateRelevance() {
 	//checking the relevance calculation
 	SearchServer server;
 	server.AddDocument(0, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
@@ -114,7 +142,7 @@ void TestCalculateRElevance() {
 	ASSERT((doc0.relevance - 0.51986) < 0.00001);
 }
 
-void TestCalculateRElevanceManyDocs() {
+void TestCalculateRelevanceManyDocs() {
 	//checking the relevance calculation with many docs
 	SearchServer server;
 	server.AddDocument(0, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
@@ -127,7 +155,13 @@ void TestCalculateRElevanceManyDocs() {
 	server.AddDocument(7, "скворец евгений рядом кот и собака"s, DocumentStatus::ACTUAL, { 9 });
 	const auto found_docs = server.FindTopDocuments("пушистый ухоженный кот"s);
 	const Document& doc0 = found_docs[0];
+	const Document& doc1 = found_docs[1];
+	const Document& doc2 = found_docs[2];
+	const Document& doc4 = found_docs[4];
 	ASSERT((doc0.relevance - 0.46407) < 0.00001);
+	ASSERT((doc1.relevance - 0.387717) < 0.00001);
+	ASSERT((doc2.relevance - 0.290788) < 0.00001);
+	ASSERT((doc4.relevance - 0.245207) < 0.00001);
 }
 
 void TestSortWithPredicate() {
@@ -179,9 +213,11 @@ void TestSearchServer() {
 	TestExcludeStopAndMinusWordsFromAddedDocumentContent();
 	TestMatchingDoc();
 	TestCalculationRating();
+	TestCalculationRatingNegativNumbers();
+	TestCalculationLotsOfRating();
 	TestSortFromRelevance();
-	TestCalculateRElevance();
-	TestCalculateRElevanceManyDocs();
+	TestCalculateRelevance();
+	TestCalculateRelevanceManyDocs();
 	TestSortWithPredicate();
 	TestGetDocumentsForStatusIRRELEVANT();
 	TestGetDocumentsForStatusBANNED();
