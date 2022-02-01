@@ -80,7 +80,7 @@ public:
 	int GetDocumentId() {
 		return 0;
 	}
-
+	
 	template <typename StringContainer>
 	explicit SearchServer(const StringContainer& stop_words)
 		: stop_words_(MakeUniqueNonEmptyStrings(stop_words)) {
@@ -94,60 +94,45 @@ public:
 
 	explicit SearchServer(const string& stop_words_text)
 		: SearchServer(SplitIntoWords(stop_words_text)) {
-		if (!IsValidWord(stop_words_text)) {
-			throw invalid_argument("special characters cannot be used in stop words");
-		}
 	}
 
 	void AddDocument(int document_id,
 		const string& document, DocumentStatus status,
 		const vector<int>& ratings) {
-		if (!IsValidWord(document)) {
+		if (!IsValidWord(document))
 			throw invalid_argument("special characters cannot be used");
-		}
-		else if (IsIncorrectMinus(document)) {
+		if (IsIncorrectMinus(document))
 			throw invalid_argument("incorrect minus cannot be used");
-		}
-		else if (IsNegativeID(document_id)) {
+		if (IsNegativeID(document_id))
 			throw invalid_argument("negative id is incorrect");
-		}
-		else if (IsAddingExistingID(document_id)) {
+		if (IsAddingExistingID(document_id)) {
 			throw invalid_argument("add existing id");
 		}
-		else {
-			const vector<string> words = SplitIntoWordsNoStop(document);
-			const double inv_word_count = 1.0 / words.size();
-			for (const string& word : words) {
-				word_to_document_freqs_[word][document_id] += inv_word_count;
-			}
-			documents_.emplace(document_id, DocumentData{ ComputeAverageRating(ratings), status });
+
+		const vector<string> words = SplitIntoWordsNoStop(document);
+		const double inv_word_count = 1.0 / words.size();
+		for (const string& word : words) {
+			word_to_document_freqs_[word][document_id] += inv_word_count;
 		}
+		documents_.emplace(document_id, DocumentData{ ComputeAverageRating(ratings), status });
 	}
 
 	template <typename DocumentPredicate>
 	vector<Document> FindTopDocuments(const string& raw_query, DocumentPredicate document_predicate) const {
-		if (!IsValidWord(raw_query)) {
-			throw invalid_argument("special characters cannot be used");
-		}
-		else if (IsIncorrectMinus(raw_query)) {
-			throw invalid_argument("incorrect minus cannot be used");
-		}
-		else {
-			const Query query = ParseQuery(raw_query);
-			auto matched_documents = FindAllDocuments(query, document_predicate);
-			sort(matched_documents.begin(), matched_documents.end(), [](const Document& lhs, const Document& rhs) {
-				if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
-					return lhs.rating > rhs.rating;
-				}
-				else {
-					return lhs.relevance > rhs.relevance;
-				}
-				});
-			if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT) {
-				matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
+		const Query query = ParseQuery(raw_query);
+		auto matched_documents = FindAllDocuments(query, document_predicate);
+		sort(matched_documents.begin(), matched_documents.end(), [](const Document& lhs, const Document& rhs) {
+			if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
+				return lhs.rating > rhs.rating;
 			}
-			return matched_documents;
+			else {
+				return lhs.relevance > rhs.relevance;
+			}
+			});
+		if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT) {
+			matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
 		}
+		return matched_documents;
 	}
 
 	vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus status) const {
@@ -169,9 +154,12 @@ public:
 			throw out_of_range("Index of document is out of range"s);
 		}
 		else {
-			auto it = std::next(documents_.begin(), index);
-			return it->first;			
+			int i = 0;
+			for (auto& item : documents_) {
+				if (i++ == index)  return item.first;
+			}
 		}
+        return SearchServer::INVALID_DOCUMENT_ID;
 	}
 
 	tuple<vector<string>, DocumentStatus> MatchDocument(const string& raw_query, int document_id) const {
@@ -247,9 +235,11 @@ private:
 
 	QueryWord ParseQueryWord(string text) const {
 		bool is_minus = false;
-
-		if ((text[0] == '-') && (text[1] == '-')) {
-			throw invalid_argument("Incorrect minus"s);
+		if (!IsValidWord(text)) {
+			throw invalid_argument("special characters cannot be used");
+		}
+		if (IsIncorrectMinus(text)) {
+			throw invalid_argument("incorrect minus cannot be used");
 		}
 		// Word shouldn't be empty
 		if (text[0] == '-') {
@@ -324,9 +314,8 @@ private:
 	}
 
 	bool IsAddingExistingID(int document_id) const {
-
 		return documents_.count(document_id);
-	}	
+	}
 
 	static bool IsValidWord(const string& word) {
 		// A valid word must not contain special characters
