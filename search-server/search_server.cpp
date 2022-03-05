@@ -4,48 +4,34 @@
 
 using namespace std;
 
-SearchServer :: SearchServer(const string& stop_words_text)
-    : SearchServer(SplitIntoWords(stop_words_text))  
+SearchServer::SearchServer(const string& stop_words_text)
+    : SearchServer(SplitIntoWords(stop_words_text))
 {
 }
+/*
+//////////////////////////////////
+std::vector<int>::const_iterator SearchServer::begin() const {
+    return document_ids_.begin();
+}
 
-const std::map<std::string, double> SearchServer::GetWordFrequencies(int document_id) const {
-    map<string, double> word_to_freqs;
-    for (const auto& [key, value] : word_to_document_freqs_) {
-        for (const auto& [key2, value2] : value) {
-            if (key2 == document_id) {
-                word_to_freqs[key] = value2;
-            }
-        }
-    }
-    static const std::map<std::string, double> empty_map;
-    if (documents_.count(document_id) > 0) {
-        return word_to_freqs;
-    }
-    return empty_map;
+std::vector<int>::const_iterator SearchServer::end() const {
+    return document_ids_.end();
+}
+*/
+const map<string, double>& SearchServer::GetWordFrequencies(int document_id) const {
+    static const map<string, double> empty_map;
+    if (document_ids_.count(document_id) == 0)
+        return empty_map;
+    return id_word_frequencies_.at(document_id);
 }
 
 void SearchServer::RemoveDocument(int document_id) {
-    if (documents_.count(document_id) == 0) {
-        return;
-    }
-    set <string>delete_documents;
-    for (const auto& [key, value] : word_to_document_freqs_) {
-        for (const auto& [key2, value2] : value) {
-            if (key2 == document_id) {
-                delete_documents.insert(key);
-
-            }
-        }
-    }
-    for (auto i : delete_documents) { 
-        word_to_document_freqs_.erase(i); 
-    }
+    id_word_frequencies_.erase(document_id);
     documents_.erase(document_id);
-    document_ids_.erase(std::find(document_ids_.begin(), document_ids_.end(), document_id));
+    document_ids_.erase(document_id);
 }
 
-void SearchServer :: AddDocument(int document_id, const string& document, DocumentStatus status, const vector<int>& ratings) {
+void SearchServer::AddDocument(int document_id, const string& document, DocumentStatus status, const vector<int>& ratings) {
     if ((document_id < 0) || (documents_.count(document_id) > 0)) {
         throw invalid_argument("Invalid document_id"s);
     }
@@ -54,6 +40,7 @@ void SearchServer :: AddDocument(int document_id, const string& document, Docume
     const double inv_word_count = 1.0 / words.size();
     for (const string& word : words) {
         word_to_document_freqs_[word][document_id] += inv_word_count;
+        id_word_frequencies_[document_id][word] += inv_word_count;
     }
     documents_.emplace(document_id, DocumentData{ ComputeAverageRating(ratings), status });
     document_ids_.insert(document_id);
@@ -97,7 +84,7 @@ bool SearchServer::IsStopWord(const string& word) const {
     return stop_words_.count(word) > 0;
 }
 
- bool SearchServer::IsValidWord(const string& word) {
+bool SearchServer::IsValidWord(const string& word) {
     // A valid word must not contain special characters
     return none_of(word.begin(), word.end(), [](char c) {
         return c >= '\0' && c < ' ';
@@ -117,7 +104,7 @@ vector<string>SearchServer::SplitIntoWordsNoStop(const string& text) const {
     return words;
 }
 
- int SearchServer::ComputeAverageRating(const vector<int>& ratings) {
+int SearchServer::ComputeAverageRating(const vector<int>& ratings) {
     if (ratings.empty()) {
         return 0;
     }

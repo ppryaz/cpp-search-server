@@ -18,7 +18,10 @@ namespace std {
 		explicit SearchServer(const StringContainer& stop_words);
 		explicit SearchServer(const string& stop_words_text);
 
-		const std::map<std::string, double> GetWordFrequencies(int document_id) const;
+		const map<string, double>& GetWordFrequencies(int document_id) const;
+		
+		set<int>::iterator begin() const { return document_ids_.begin(); }
+		set<int>::iterator end() const { return document_ids_.end(); }
 
 		void RemoveDocument(int document_id);
 
@@ -41,13 +44,13 @@ namespace std {
 
 		tuple<vector<string>, DocumentStatus> MatchDocument(const string& raw_query, int document_id) const;
 
-		std::set<int>::const_iterator begin() const {
+		/*std::set<int>::const_iterator begin() const {
 			return document_ids_.begin();
 		}
 
 		std::set<int>::const_iterator end() const {
 			return document_ids_.end();
-		}
+		}*/
 
 	private:
 		struct DocumentData {
@@ -58,6 +61,7 @@ namespace std {
 		map<string, map<int, double>> word_to_document_freqs_;
 		map<int, DocumentData> documents_;
 		set<int> document_ids_;
+		map<int, map<string, double>> id_word_frequencies_;
 
 		bool IsStopWord(const string& word) const;
 
