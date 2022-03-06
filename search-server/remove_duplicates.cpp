@@ -7,10 +7,10 @@ using namespace std;
 
 void RemoveDuplicates(SearchServer& search_server) {
 	set <int> id_dublicate_delete;
-	map<set<string>, int>set_words_in_document;
-	map<string, double>words_freq;
-	set<string>words;
+	map<set<string>, int> set_words_in_document;
+	map<string, double>words_freq;	
 	for (const int document_id : search_server) {
+		set<string>words;
 		words_freq = search_server.GetWordFrequencies(document_id);
 		for (auto [word, freq] : words_freq) {
 			words.insert(word);
@@ -21,7 +21,6 @@ void RemoveDuplicates(SearchServer& search_server) {
 		else {
 			id_dublicate_delete.insert(document_id);
 		}
-		words_freq.clear();
 	}
 	for (int id_doc : id_dublicate_delete) {
 		search_server.RemoveDocument(id_doc);

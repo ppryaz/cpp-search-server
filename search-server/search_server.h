@@ -19,7 +19,7 @@ namespace std {
 		explicit SearchServer(const string& stop_words_text);
 
 		const map<string, double>& GetWordFrequencies(int document_id) const;
-		
+
 		set<int>::iterator begin() const { return document_ids_.begin(); }
 		set<int>::iterator end() const { return document_ids_.end(); }
 
@@ -29,9 +29,7 @@ namespace std {
 
 		template <typename DocumentPredicate>
 		vector<Document> FindTopDocuments(const string& raw_query, DocumentPredicate document_predicate) const;
-
 		vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus status) const;
-
 		vector<Document> FindTopDocuments(const string& raw_query) const;
 
 		int GetDocumentCount() const {
@@ -43,14 +41,6 @@ namespace std {
 		}
 
 		tuple<vector<string>, DocumentStatus> MatchDocument(const string& raw_query, int document_id) const;
-
-		/*std::set<int>::const_iterator begin() const {
-			return document_ids_.begin();
-		}
-
-		std::set<int>::const_iterator end() const {
-			return document_ids_.end();
-		}*/
 
 	private:
 		struct DocumentData {
