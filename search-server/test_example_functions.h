@@ -1,49 +1,40 @@
 #pragma once
+// In reality we should have a separate program(s) to test each class/function.
 
-#include <string>
-#include "search_server.h"
+namespace praktikum {
 
-namespace std {
-	template <typename T, typename U>
-	void AssertEqualImpl(const T& t, const U& u, const string& t_str, const string& u_str, const string& file,
-		const string& func, unsigned line, const string& hint) {
-		if (t != u) {
-			cout << boolalpha;
-			cout << file << "("s << line << "): "s << func << ": "s;
-			cout << "ASSERT_EQUAL("s << t_str << ", "s << u_str << ") failed: "s;
-			cout << t << " != "s << u << "."s;
-			if (!hint.empty()) {
-				cout << " Hint: "s << hint;
-			}
-			cout << endl;
-			abort();
-		}
-	}
+namespace tests {
 
-#define ASSERT_EQUAL(a, b) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, ""s)
-#define ASSERT_EQUAL_HINT(a, b, hint) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, (hint))
+void TestIsValidWord();
 
-	void AssertImpl(bool value, const string& expr_str, const string& file, const string& func, unsigned line, const string& hint);
+void TestMakeNonEmptySet();
 
-#define ASSERT(expr) AssertImpl(!!(expr), #expr, __FILE__, __FUNCTION__, __LINE__, ""s)
-#define ASSERT_HINT(expr, hint) AssertImpl(!!(expr), #expr, __FILE__, __FUNCTION__, __LINE__, (hint))
+void TestSplitIntoWords();
 
-	template <class TestFunc>
-	void RunTestImpl(TestFunc t_func, const string& func) {
-		t_func();
-		cerr << func << endl;
-	}
+void TestServerConstructor();
 
-#define RUN_TEST(func) RunTestImpl((func),#func)
+void TestDocumentAdding();
 
-	void TestMatchingDoc();
-	void TestSortFromRelevance();
-	void TestCalculateRElevance();
-	void TestCalculateRElevanceManyDocs();
-	void TestSortWithPredicate();
-	void TestGetDocumentsForStatusIRRELEVANT();
-	void TestGetDocumentsForStatusBANNED();
-	void TestGetDocumentsForStatusACTUAL_MAX_COUNT();
-	//Run all test functions
-	void TestSearchServer();
-}
+void TestDocumentCount();
+
+void TestStopWords();
+
+void TestMinusWords();
+
+void TestDocumentMatching();
+
+void TestDocumentSorting();
+
+void TestDocumentRatingCalculation();
+
+void TestDocumentFilteringUsingPredicate();
+
+void TestDocumentFilteringUsingStatus();
+
+void TestDocumentRelevance();
+
+void TestSearchServer();
+
+} // namespace tests
+
+} // namespace praktikum
