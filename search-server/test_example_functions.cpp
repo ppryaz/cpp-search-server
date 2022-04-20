@@ -7,9 +7,7 @@
 #include "search_server.h"
 #include "testlib.h"
 
-namespace praktikum {
 
-namespace tests {
 
 void TestIsValidWord() {
     {
@@ -645,8 +643,5 @@ void TestSearchServer() {
     RUN_TEST(TestDocumentRelevance);
 }
 
-} // namespace tests
-
-} // namespace praktikum
 
 #endif // _DEBUG

@@ -1,9 +1,6 @@
 #pragma once
 // In reality we should have a separate program(s) to test each class/function.
 
-namespace praktikum {
-
-namespace tests {
 
 void TestIsValidWord();
 
@@ -35,6 +32,3 @@ void TestDocumentRelevance();
 
 void TestSearchServer();
 
-} // namespace tests
-
-} // namespace praktikum
